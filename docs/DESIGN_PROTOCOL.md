@@ -1,6 +1,6 @@
 # Smart Desk – Protokoll Controller ↔ Manager
 
-**Status:** Entwurf v1 – zur Abstimmung, noch kein Code
+**Status:** v1 – abgestimmt am 2026-10-25
 **Gilt für:** Kommunikation zwischen Desk Controller (Raspberry Pi) und Managern (ESP32 / Mega)
 **Gilt nicht für:** Desk API zwischen Jarvis und Controller (eigenes Dokument, später)
 
@@ -217,11 +217,21 @@ Im Prototyp ist der Not-Aus ein einfacher Taster. Der echte Tisch bekommt einen 
 
 ---
 
-## 11. Zur Abstimmung offen
+## 11. Entscheidungen (2026-10-25)
 
-- [ ] JSON pro Zeile über USB-Seriell mit 115200 Baud – einverstanden?
-- [ ] Heartbeat 1 s, Verbindungsverlust nach 3 s – passend?
-- [ ] Taster am Manager entscheiden **nicht** selbst, sondern laufen über den Controller – einverstanden?
-- [ ] Not-Aus-Reset nur per bewusstem `reset`-Befehl – einverstanden?
+- [x] JSON pro Zeile über USB-Seriell mit 115200 Baud
+- [x] Heartbeat 1 s, Verbindungsverlust nach 3 s
+- [x] Taster am Manager entscheiden **nicht** selbst, sondern laufen über den Controller
+- [x] Not-Aus-Reset nur per bewusstem `reset`-Befehl
 
-Danach: Controller auf dem Pi (Schritt 2), dann LightManager-Firmware (Schritt 3).
+Ergänzungen bei der Umsetzung im Controller:
+
+- Antwort auf `QUERY status`: `{"status": "READY"}`.
+- Antwort auf `COMMAND reset`: `{"status": "READY", "state": {...}}`. Nach einem Reset bleibt das Licht **aus**.
+- `ESTOP_ACTIVE` trägt den Zustand nach der Abschaltung mit: `{"state": {"power": false, ...}}`.
+- Controller-interne Fehlercodes (gehen nie über die Leitung): `UNKNOWN_MANAGER`, `NOT_CONNECTED`, `NO_CHANGE_POSSIBLE`.
+- Relative Befehle wie `light.adjust_brightness(delta)` rechnet der **Controller** in einen `set_brightness` um
+  (größte mögliche Änderung, kein Wrap-Around; ist keine Änderung möglich → `NO_CHANGE_POSSIBLE`).
+- Referenzverhalten für die Firmware: `controller/simulated_light.py`.
+
+Nächster Schritt: LightManager-Firmware für den ESP32.

@@ -1,0 +1,6 @@
+{
+  "light": {
+    "port": "/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_XXXX-if00-port0",
+    "baudrate": 115200
+  }
+}
